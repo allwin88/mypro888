@@ -1,20 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Stationen</title>
-    <script>
-      const originalFetch = window.fetch;
-      window.fetch = function (url, options) {
-        if (typeof url === 'string' && url.includes('api.theboss.casino')) {
-          url = url.replace('https://api.theboss.casino', '/api');
-        }
-        return originalFetch(url, options);
-      };
-    </script>
+    <meta http-equiv="refresh" content="0; url=/casino" />
   </head>
-  <body style="margin:0;padding:0;overflow:hidden">
-    <iframe src="https://theboss.casino" style="border:0;width:100vw;height:100vh"></iframe>
+  <body>
+    <p>Redirecting to <a href="/casino">/casino</a>...</p>
   </body>
 </html>
