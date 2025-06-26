@@ -1,20 +1,30 @@
-// functions/[[catchall]].js
-
 export async function onRequest(context) {
   const url = new URL(context.request.url);
-  const path = url.pathname;
+  const pathname = url.pathname;
 
-  // 1. /api/* 自动转发到 /api-proxy/*
-  if (path.startsWith("/api/")) {
-    const newPath = path.replace(/^\/api\//, "/api-proxy/");
-    return Response.redirect(new URL(newPath, url.origin), 307);
+  if (pathname.startsWith("/api-proxy/")) {
+    const targetPath = pathname.replace("/api-proxy", "");
+    const targetUrl = "https://api.theboss.casino" + targetPath + (url.search || "");
+
+    const modifiedRequest = new Request(targetUrl, {
+      method: context.request.method,
+      headers: context.request.headers,
+      body: context.request.body,
+      redirect: 'follow',
+    });
+
+    const response = await fetch(modifiedRequest);
+
+    // 复制响应并设置 CORS 头
+    const newHeaders = new Headers(response.headers);
+    newHeaders.set("Access-Control-Allow-Origin", "*");
+
+    return new Response(await response.body, {
+      status: response.status,
+      headers: newHeaders
+    });
   }
 
-  // 2. 其他情况，按原逻辑处理
-  return fetch("https://theboss.casino" + path, {
-    method: context.request.method,
-    headers: context.request.headers,
-    body: context.request.body,
-    redirect: "follow"
-  });
+  // 其他请求照旧返回 index.html
+  return new Response(await context.env.ASSETS.fetch(context.request));
 }
