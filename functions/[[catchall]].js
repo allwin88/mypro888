@@ -2,30 +2,34 @@ export async function onRequest({ request }) {
   const url = new URL(request.url);
   const path = url.pathname;
 
-  // 特殊处理：代理 API 请求
-  const isApi = path.startsWith('/api/');
-  const targetHost = isApi ? 'https://api.theboss.casino' : 'https://theboss.casino';
+  let targetHost = 'https://theboss.casino';
+
+  // 处理 API 请求代理
+  if (path.startsWith('/api/')) {
+    targetHost = 'https://api.theboss.casino';
+    url.pathname = path.replace('/api', '');
+  }
+
   const targetUrl = targetHost + url.pathname + url.search;
 
-  const newHeaders = new Headers(request.headers);
-  newHeaders.set('Referer', targetHost);
-  newHeaders.set('Origin', targetHost);
-  newHeaders.set('User-Agent', request.headers.get('user-agent') || '');
+  const modifiedHeaders = new Headers(request.headers);
+  modifiedHeaders.set('Referer', targetHost);
+  modifiedHeaders.set('Origin', targetHost);
 
-  const res = await fetch(targetUrl, {
+  const response = await fetch(targetUrl, {
     method: request.method,
-    headers: newHeaders,
-    body: request.method !== 'GET' && request.method !== 'HEAD' ? request.body : undefined,
+    headers: modifiedHeaders,
+    body: ['GET', 'HEAD'].includes(request.method) ? null : request.body,
     redirect: 'follow'
   });
 
-  const resHeaders = new Headers(res.headers);
-  resHeaders.set('Access-Control-Allow-Origin', '*');
-  resHeaders.delete('content-security-policy');
-  resHeaders.delete('x-frame-options');
+  const responseHeaders = new Headers(response.headers);
+  responseHeaders.set('Access-Control-Allow-Origin', '*');
+  responseHeaders.delete('content-security-policy');
+  responseHeaders.delete('x-frame-options');
 
-  return new Response(res.body, {
-    status: res.status,
-    headers: resHeaders
+  return new Response(response.body, {
+    status: response.status,
+    headers: responseHeaders
   });
 }
