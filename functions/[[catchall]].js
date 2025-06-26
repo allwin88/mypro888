@@ -3,15 +3,12 @@ export async function onRequest({ request }) {
   const path = url.pathname;
 
   let targetHost = 'https://theboss.casino';
-
-  // 处理 API 请求代理
   if (path.startsWith('/api/')) {
     targetHost = 'https://api.theboss.casino';
     url.pathname = path.replace('/api', '');
   }
 
   const targetUrl = targetHost + url.pathname + url.search;
-
   const modifiedHeaders = new Headers(request.headers);
   modifiedHeaders.set('Referer', targetHost);
   modifiedHeaders.set('Origin', targetHost);
