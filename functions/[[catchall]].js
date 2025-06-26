@@ -1,21 +1,25 @@
-export async function onRequest(context) {
-  const url = new URL(context.request.url);
-  const targetUrl = `https://theboss.casino${url.pathname}${url.search}`;
+export async function onRequest({ request }) {
+  const url = new URL(request.url);
+  const target = `https://theboss.casino${url.pathname}${url.search}`;
 
-  const response = await fetch(targetUrl, {
-    method: context.request.method,
-    headers: context.request.headers,
-    body: context.request.body,
-    redirect: "follow",
+  const newHeaders = new Headers(request.headers);
+  newHeaders.set('Referer', 'https://theboss.casino');
+  newHeaders.set('Origin', 'https://theboss.casino');
+  newHeaders.set('User-Agent', request.headers.get('user-agent') || '');
+
+  const res = await fetch(target, {
+    method: request.method,
+    headers: newHeaders,
+    body: request.method !== 'GET' && request.method !== 'HEAD' ? request.body : undefined,
+    redirect: 'follow'
   });
 
-  const modifiedHeaders = new Headers(response.headers);
-  modifiedHeaders.set('Access-Control-Allow-Origin', '*');
-  modifiedHeaders.delete('Content-Security-Policy');
-  modifiedHeaders.delete('X-Frame-Options');
+  const resHeaders = new Headers(res.headers);
+  resHeaders.delete('content-security-policy');
+  resHeaders.delete('x-frame-options');
 
-  return new Response(response.body, {
-    status: response.status,
-    headers: modifiedHeaders,
+  return new Response(res.body, {
+    status: res.status,
+    headers: resHeaders
   });
 }
