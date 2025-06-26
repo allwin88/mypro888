@@ -1,22 +1,31 @@
 export async function onRequest(context) {
-  const { params } = context;
-  const lang = (params['...catchall'] && params['...catchall'][0]) || 'en';
-  let translations;
-  switch(lang) {
-    case 'es':
-      translations = (await import('../langs/es.json')).default;
-      break;
-    case 'pt':
-      translations = (await import('../langs/pt.json')).default;
-      break;
-    default:
-      translations = (await import('../langs/en.json')).default;
-      break;
-  }
+  const replacements = {
+    "{{TITLE}}": "Stationen Pro - Sweepstakes Platform",
+    "{{DESCRIPTION}}": "Play free sweepstakes games and win exciting prizes.",
+    "{{KEYWORDS}}": "sweepstakes, casino, slots, free games"
+  };
+
   const html = `<!DOCTYPE html>
-<html lang="${lang}">
-<head><meta charset="utf-8"><title>${translations.title}</title></head>
-<body><h1>${translations.title}</h1><p>${translations.description}</p></body>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{TITLE}}</title>
+    <meta name="description" content="{{DESCRIPTION}}">
+    <meta name="keywords" content="{{KEYWORDS}}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <h1>{{TITLE}}</h1>
+    <p>Welcome to our sweepstakes platform – your gateway to fun and rewards!</p>
+</body>
 </html>`;
-  return new Response(html, { headers: { 'Content-Type': 'text/html' } });
+
+  let content = html;
+  for (const key in replacements) {
+    content = content.replaceAll(key, replacements[key]);
+  }
+
+  return new Response(content, {
+    headers: { "Content-Type": "text/html; charset=UTF-8" }
+  });
 }
