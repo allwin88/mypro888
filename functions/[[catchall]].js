@@ -1,25 +1,21 @@
-
 export async function onRequest(context) {
   const url = new URL(context.request.url);
-  const targetUrl = "https://theboss.casino" + url.pathname + url.search;
+  const targetUrl = `https://theboss.casino${url.pathname}${url.search}`;
 
-  const modifiedRequest = new Request(targetUrl, {
+  const response = await fetch(targetUrl, {
     method: context.request.method,
     headers: context.request.headers,
     body: context.request.body,
-    redirect: 'manual'
+    redirect: "follow",
   });
 
-  const response = await fetch(modifiedRequest);
-  const newHeaders = new Headers(response.headers);
-  newHeaders.set("Access-Control-Allow-Origin", "*");
-  newHeaders.delete("content-security-policy");
-  newHeaders.delete("content-security-policy-report-only");
-  newHeaders.delete("clear-site-data");
+  const modifiedHeaders = new Headers(response.headers);
+  modifiedHeaders.set('Access-Control-Allow-Origin', '*');
+  modifiedHeaders.delete('Content-Security-Policy');
+  modifiedHeaders.delete('X-Frame-Options');
 
   return new Response(response.body, {
     status: response.status,
-    statusText: response.statusText,
-    headers: newHeaders
+    headers: modifiedHeaders,
   });
 }
