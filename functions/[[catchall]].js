@@ -1,15 +1,7 @@
-
 export async function onRequest(context) {
   const url = new URL(context.request.url)
-  const pathname = url.pathname
-
-  if (pathname === '/' || pathname === '/index.html') {
-    return context.next()
+  if (!url.pathname.endsWith(".html") && !url.pathname.includes(".")) {
+    return fetch(new URL("/index.html", context.request.url))
   }
-
-  return fetch(`https://theboss.casino${pathname}`, {
-    headers: context.request.headers,
-    method: context.request.method,
-    body: context.request.body
-  })
+  return context.next()
 }
